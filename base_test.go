@@ -1,7 +1,6 @@
 package JudgeLight_Go
 
 import (
-	"fmt"
 	"golang.org/x/sys/unix"
 	"sync"
 	"testing"
@@ -16,7 +15,7 @@ func TestFork(t *testing.T) {
 	if pid == 0 {
 		unix.Exit(0)
 	} else {
-		time.Sleep(1000000000)
+		time.Sleep(time.Second)
 	}
 
 	ForkLock.Unlock()
@@ -33,7 +32,7 @@ func TestLimit(t *testing.T) {
 		rl.Max = 2
 		_ = unix.Setrlimit(unix.RLIMIT_CPU, &rl)
 		for {
-			;
+
 		}
 		unix.Exit(0)
 	} else {
@@ -72,7 +71,7 @@ func TestPtrace(t *testing.T) {
 				if err := unix.PtraceGetRegs(int(pid), &regs); err != nil {
 					break
 				}
-				fmt.Println(regs.Orig_rax)
+				//fmt.Println(regs.Orig_rax)
 			}
 
 			if err := unix.PtraceSyscall(int(pid), 0); err != nil {
