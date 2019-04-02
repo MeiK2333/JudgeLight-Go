@@ -1,6 +1,7 @@
 package JudgeLight_Go
 
 import (
+	"fmt"
 	"golang.org/x/sys/unix"
 	"sync"
 	"testing"
@@ -45,6 +46,42 @@ func TestLimit(t *testing.T) {
 	}
 
 	ForkLock.Unlock()
+}
+
+func TestRealTimeLimit(t *testing.T) {
+	var ForkLock sync.RWMutex
+	ForkLock.Lock()
+	pid, _, _ := unix.Syscall(unix.SYS_FORK, 0, 0, 0)
+	if pid == 0 {
+		if err := unix.Exec("/bin/sleep", []string{"sleep", "2"}, []string{}); err != nil {
+			t.Fail()
+		}
+		unix.Exit(0)
+	}
+	ForkLock.Unlock()
+
+	var status unix.WaitStatus
+	var ru unix.Rusage
+	ticker := time.NewTicker(time.Second)
+
+	go func() {
+		defer ticker.Stop()
+
+		select {
+		case <-ticker.C:
+			ret, err := unix.Wait4(int(pid), &status, unix.WNOHANG, &ru)
+			if err != nil {
+				panic(err)
+			}
+			if ret == 0 {
+				fmt.Println("out real time limit")
+				unix.Kill(int(pid), unix.SIGKILL)
+			}
+		}
+	}()
+
+	time.Sleep(3 * time.Second)
+	ticker.Stop()
 }
 
 func TestPtrace(t *testing.T) {
