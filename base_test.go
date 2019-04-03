@@ -99,11 +99,12 @@ func TestPtrace(t *testing.T) {
 		}
 		unix.Exit(-1)
 	} else {
-		if _, err := unix.Wait4(int(pid), nil, 0, nil); err != nil {
-			t.Fail()
-		}
 		exit := true
 		for {
+			if _, err := unix.Wait4(int(pid), nil, 0, nil); err != nil {
+				t.Fail()
+			}
+
 			if exit {
 				if err := unix.PtraceGetRegs(int(pid), &regs); err != nil {
 					break
@@ -112,10 +113,6 @@ func TestPtrace(t *testing.T) {
 			}
 
 			if err := unix.PtraceSyscall(int(pid), 0); err != nil {
-				t.Fail()
-			}
-
-			if _, err := unix.Wait4(int(pid), nil, 0, nil); err != nil {
 				t.Fail()
 			}
 
