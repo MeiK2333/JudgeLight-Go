@@ -28,3 +28,27 @@ func TestRun(t *testing.T) {
 	}
 	fmt.Println(result)
 }
+
+func TestRealTimeLimit(t *testing.T) {
+	result, err := Run(
+		"/bin/sleep",
+		[]string{"3"},
+		[]string{},
+		1000,
+		1000,
+		65535,
+		65535,
+		655350,
+		"",
+		"",
+		"",
+		0,
+		0,
+		"",
+		nil,
+	)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(result)
+}

@@ -13,7 +13,7 @@ func Run(
 	envs []string,
 
 	cpuTimeLimit int,
-	readTimeLimit int,
+	realTimeLimit int,
 	memoryLimit int,
 	stackLimit int,
 	outputSizeLimit int,
@@ -88,14 +88,31 @@ func Run(
 
 	// Parent
 
-	// TODO
 	// set real time limit
+	stop := make(chan bool, 1)
+	// Determine if the child process exits after a period of time
+	if realTimeLimit != 0 {
+		ticker := time.NewTicker(time.Millisecond * time.Duration(realTimeLimit))
+		go func() {
+			defer ticker.Stop()
+
+			select {
+			case <-ticker.C:
+				ret, _ := unix.Wait4(int(pid), &status, unix.WNOHANG, &ru)
+				if ret == 0 {
+					_ = unix.Kill(int(pid), unix.SIGKILL)
+				}
+			case <-stop:
+				return
+			}
+		}()
+	}
 
 	exit := true
 	var regs unix.PtraceRegs
 	for {
 		if _, err := unix.Wait4(int(pid), &status, unix.WSTOPPED, &ru); err != nil {
-			return result, errors.New("wait4 failure")
+			return result, err
 		}
 
 		// Exited
@@ -112,7 +129,7 @@ func Run(
 			goto JUDGEEND
 		}
 
-		if exit {
+		if exit { // In syscall exit
 			exit = false
 
 			// Copy the tracee's general-purpose or floating-point registers
@@ -146,6 +163,7 @@ func Run(
 	}
 
 JUDGEEND:
+	stop <- true
 	// cpu time used
 	// user time + system time
 	result.cpuTimeUsed = int(ru.Utime.Sec*1000) + int(ru.Utime.Usec/1000) +
