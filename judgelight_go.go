@@ -4,6 +4,7 @@ import (
 	"errors"
 	"golang.org/x/sys/unix"
 	"sync"
+	"time"
 )
 
 func Run(
@@ -36,6 +37,8 @@ func Run(
 	result := Result{}
 	var status unix.WaitStatus
 	var ru unix.Rusage
+	// start time
+	startTime := time.Now().UnixNano() / 1e6
 
 	var ForkLock sync.RWMutex
 	ForkLock.Lock()
@@ -106,7 +109,6 @@ func Run(
 			_, _, _ = unix.Syscall(unix.SYS_PTRACE, uintptr(unix.PTRACE_KILL), 0, 0)
 			_, _ = unix.Wait4(int(pid), nil, 0, nil)
 			result.reFlag = true
-			result.reSignal = int(status.StopSignal())
 			goto JUDGEEND
 		}
 
@@ -144,6 +146,18 @@ func Run(
 	}
 
 JUDGEEND:
+	// cpu time used
+	// user time + system time
+	result.cpuTimeUsed = int(ru.Utime.Sec*1000) + int(ru.Utime.Usec/1000) +
+		int(ru.Stime.Sec*1000) + int(ru.Stime.Usec/1000)
+
+	// real time used
+	endTime := time.Now().UnixNano() / 1e6
+	result.realTimeUsed = int(endTime - startTime)
+
+	// signal
+	result.signal = int(status.StopSignal())
+
 	return result, nil
 }
 

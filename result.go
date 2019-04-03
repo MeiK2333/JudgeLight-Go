@@ -7,5 +7,4 @@ type Result struct {
 	signal       int
 	reFlag       bool
 	reSyscall    int
-	reSignal     int
 }
