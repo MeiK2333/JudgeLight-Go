@@ -18,13 +18,13 @@ func MemoryUsage(fd int) (MemoryStatus, error) {
 
 	// get status by /proc/<pid>/status
 	body := make([]byte, 4096)
-	len, err := unix.Pread(fd, body, 0)
+	count, err := unix.Pread(fd, body, 0)
 	if err != nil {
 		return ms, err
 	}
 
 	// parse data by file
-	for i := 0; i < len; i++ {
+	for i := 0; i < count; i++ {
 		switch body[i] {
 		case 'V':
 			goto V
