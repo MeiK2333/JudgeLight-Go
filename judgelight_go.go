@@ -4,6 +4,7 @@ import (
 	"errors"
 	"golang.org/x/sys/unix"
 	"runtime"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -114,6 +115,12 @@ func Run(
 
 	exit := true
 	var regs unix.PtraceRegs
+	fd, err := unix.Open("/proc/"+strconv.Itoa(int(pid))+"/status", unix.O_RDONLY, 600)
+	if err != nil {
+		return result, err
+	}
+	defer unix.Close(fd)
+
 	for {
 		if _, err := unix.Wait4(int(pid), &status, unix.WSTOPPED, &ru); err != nil {
 			return result, err
@@ -151,8 +158,8 @@ func Run(
 			}
 
 			// Get memory usage
-			if ms, err := MemoryUsage(int(pid)); err != nil {
-				return result, nil
+			if ms, err := MemoryUsage(fd); err != nil {
+				return result, err
 			} else if ms.vmData > result.memoryUsed {
 				result.memoryUsed = ms.vmData
 			}
