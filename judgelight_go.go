@@ -3,6 +3,7 @@ package JudgeLight_Go
 import (
 	"errors"
 	"golang.org/x/sys/unix"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -27,6 +28,9 @@ func Run(
 	chroot string,
 	syscallRule []bool,
 ) (Result, error) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
 	if syscallRule == nil {
 		syscallRule = make([]bool, 512)
 		for i, _ := range syscallRule {
