@@ -31,3 +31,27 @@ func TestRealTimeLimit(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestOutputSizeLimit(t *testing.T) {
+	result, err := Run(
+		"/bin/bash",
+		[]string{"tests/loopecho.sh"},
+		[]string{},
+		1000,
+		1000,
+		65535,
+		65535,
+		10,
+		"",
+		"tests/tmp.out",
+		"",
+		0,
+		0,
+		"",
+		nil,
+	)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("test output size limit:", result)
+}
