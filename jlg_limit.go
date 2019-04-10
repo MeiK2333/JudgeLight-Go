@@ -90,7 +90,7 @@ func SetProcStream(inputFilePath string, outputFilePath string, errorFilePath st
 
 	// set output stream
 	if outputFilePath != "" {
-		if fd, err := unix.Open(outputFilePath, unix.O_WRONLY, 666); err != nil {
+		if fd, err := unix.Open(outputFilePath, unix.O_WRONLY|unix.O_CREAT, 666); err != nil {
 			return err
 		} else {
 			if err := unix.Dup2(fd, unix.Stdout); err != nil {
@@ -101,7 +101,7 @@ func SetProcStream(inputFilePath string, outputFilePath string, errorFilePath st
 
 	// set error stream
 	if errorFilePath != "" {
-		if fd, err := unix.Open(errorFilePath, unix.O_WRONLY, 666); err != nil {
+		if fd, err := unix.Open(errorFilePath, unix.O_WRONLY|unix.O_CREAT, 666); err != nil {
 			return err
 		} else {
 			if err := unix.Dup2(fd, unix.Stderr); err != nil {
