@@ -78,7 +78,7 @@ func SetProcStream(inputFilePath string, outputFilePath string, errorFilePath st
 	// set input stream
 	if inputFilePath != "" {
 		// open file
-		if fd, err := unix.Open(inputFilePath, unix.O_RDONLY, 666); err != nil {
+		if fd, err := unix.Open(inputFilePath, unix.O_RDONLY, 0666); err != nil {
 			return err
 		} else {
 			// dup pipe
