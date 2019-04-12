@@ -1,4 +1,4 @@
-package JudgeLight_Go
+package judgelight
 
 import (
 	"golang.org/x/sys/unix"
